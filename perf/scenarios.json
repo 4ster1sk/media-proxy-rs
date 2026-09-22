@@ -1,0 +1,42 @@
+{
+  "jpeg_preview": {
+    "file": "photo_4000x3000.jpg",
+    "query": { "preview": "1" }
+  },
+  "jpeg_avatar": {
+    "file": "photo_4000x3000.jpg",
+    "query": { "avatar": "1" }
+  },
+  "jpeg_static": {
+    "file": "photo_4000x3000.jpg",
+    "query": { "static": "1" }
+  },
+  "jpeg_maxpixels": {
+    "file": "photo_4000x3000.jpg",
+    "query": {}
+  },
+  "png_badge": {
+    "file": "alpha_1500x1500.png",
+    "query": { "badge": "1" }
+  },
+  "webp_preview": {
+    "file": "pic_1600x1200.webp",
+    "query": { "preview": "1" }
+  },
+  "gif_anim": {
+    "file": "anim_480x480.gif",
+    "query": { "preview": "1" }
+  },
+  "svg_avatar": {
+    "file": "icon.svg",
+    "query": { "avatar": "1" }
+  },
+  "small_emoji": {
+    "file": "small_320x320.jpg",
+    "query": { "emoji": "1" }
+  },
+  "noise_preview": {
+    "file": "noise_1024.png",
+    "query": { "preview": "1" }
+  }
+}
