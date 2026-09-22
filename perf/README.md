@@ -54,7 +54,8 @@ perf/run.sh --avif
 レポート作成までを一括で行い、終了時に必ず子プロセスを停止します。
 
 主なオプション: `--scenario NAME` / `--concurrency N` / `--duration SEC` / `--warmup SEC` /
-`--rounds N` / `--port` / `--origin-port` / `--pin` (server と client を別コアに固定)。
+`--rounds N` / `--port` / `--origin-port` / `--pin` (server と client を別コアに固定) /
+`--config FILE` (使う設定ファイルを明示)。
 `perf/run.sh --help` を参照してください。
 
 ## PR 用 before/after 比較
@@ -72,6 +73,8 @@ perf/compare.sh --base /path/to/clone --head .
 
 - corpus と config は両者で共通 (corpus の sha256 を meta に記録)
 - 各ラウンドで base/head を交互に起動し、指標は **ラウンド中央値** を採用
+- `--base-label` / `--head-label` でレポートの表示名を指定できる(フォーク比較など)
+- `--config FILE` で測定用設定を明示できる(相手側だけが知る追加フィールドを入れた設定を使う場合など)
 - 出力: `perf/results/compare-<timestamp>/report.md`
 
 ```markdown
@@ -134,10 +137,11 @@ CARGO_TARGET_DIR=target/profile CARGO_PROFILE_RELEASE_DEBUG=true \
 | `profile.sh` | `perf` による CPU プロファイル |
 | `loadtest.py` | 負荷生成 + レイテンシ集計 + `/proc` サンプリング |
 | `origin.py` | corpus を配信するローカル origin スタブ |
-| `gen_corpus.sh` | ImageMagick で corpus 生成 + sha256 記録 |
+| `gen_corpus.sh` | corpus 生成 + sha256 記録 (ImageMagick、無ければ ffmpeg) |
 | `summarize.py` | 結果 JSON → markdown レポート |
 | `scenarios.json` | シナリオ定義 |
 | `config.perf.json` / `config.perf-avif.json` | 測定用プロキシ設定 |
+| `config.perf-nocache.json` / `config.perf-avif-nocache.json` | キャッシュ/パススルーを無効化した設定(ブランチ間で純粋な処理性能を比べるとき用。未対応のバイナリは余分なフィールドを無視する) |
 | `lib.sh` | スクリプト共通ユーティリティ |
 
 `perf/corpus/` と `perf/results/` は git 管理外です。

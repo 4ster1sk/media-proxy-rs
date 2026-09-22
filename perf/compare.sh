@@ -29,8 +29,11 @@ usage: compare.sh [options]
   --warmup SEC         ウォームアップ時間 (default: 5)
   --scenario NAME      シナリオ名 (複数指定可 / all)  default: all
   --avif               encode_avif=true で比較
+  --config FILE        使う設定ファイルを明示する (--avif より優先)
   --threshold PCT      有意とみなす差分 (default: 5)
   --label NAME         結果ディレクトリ名 (default: compare-<timestamp>)
+  --base-label NAME    base 側の表示名 (default: 自動)
+  --head-label NAME    head 側の表示名 (default: 自動)
   --keep-worktrees     ビルド用の worktree / target を残す
   -h, --help
 EOF
@@ -43,10 +46,13 @@ DURATION=15
 WARMUP=5
 ROUNDS=3
 AVIF=0
+CONFIG_ARG=""
 SCENARIOS=()
 THRESHOLD=5
 LABEL=""
 KEEP=0
+BASE_LABEL_ARG=""
+HEAD_LABEL_ARG=""
 
 while [ $# -gt 0 ]; do
 	case "$1" in
@@ -91,12 +97,24 @@ while [ $# -gt 0 ]; do
 			AVIF=1
 			shift
 			;;
+		--config)
+			CONFIG_ARG="$2"
+			shift 2
+			;;
 		--threshold)
 			THRESHOLD="$2"
 			shift 2
 			;;
 		--label)
 			LABEL="$2"
+			shift 2
+			;;
+		--base-label)
+			BASE_LABEL_ARG="$2"
+			shift 2
+			;;
+		--head-label)
+			HEAD_LABEL_ARG="$2"
 			shift 2
 			;;
 		--keep-worktrees)
@@ -136,7 +154,7 @@ resolve_side() { # $1=side(base|head) $2=value
 	if [ -f "$value" ] && [ -x "$value" ]; then
 		SIDE_KIND[$side]="binary"
 		SIDE_BIN[$side]="$(cd "$(dirname "$value")" && pwd)/$(basename "$value")"
-		SIDE_LABEL[$side]="bin:$(basename "$value")"
+		SIDE_LABEL[$side]="bin:$(echo "${SIDE_BIN[$side]}" | rev | cut -d/ -f1-4 | rev)"
 		return 0
 	fi
 	if [ -d "$value" ]; then
@@ -156,6 +174,13 @@ resolve_side() { # $1=side(base|head) $2=value
 
 resolve_side base "$BASE_ARG"
 resolve_side head "$HEAD_ARG"
+
+if [ -n "$BASE_LABEL_ARG" ]; then
+	SIDE_LABEL[base]="$BASE_LABEL_ARG"
+fi
+if [ -n "$HEAD_LABEL_ARG" ]; then
+	SIDE_LABEL[head]="$HEAD_LABEL_ARG"
+fi
 
 BUILD_ROOT="${TMPDIR:-/tmp}/media-proxy-perf-build-$$"
 mkdir -p "$BUILD_ROOT"
@@ -264,6 +289,9 @@ for r in $(seq 1 "$ROUNDS"); do
 		)
 		if [ "$AVIF" -eq 1 ]; then
 			RUN_ARGS+=(--avif)
+		fi
+		if [ -n "${CONFIG_ARG:-}" ]; then
+			RUN_ARGS+=(--config "$CONFIG_ARG")
 		fi
 		if [ "${#SCENARIOS[@]}" -gt 0 ]; then
 			for sc in "${SCENARIOS[@]}"; do

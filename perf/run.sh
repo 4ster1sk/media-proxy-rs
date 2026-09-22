@@ -24,6 +24,7 @@ usage: run.sh [options]
   --no-start           プロキシを起動しない
   --pid PID            RSS/CPU をサンプリングする対象 PID (default: 起動したプロキシ)
   --avif               encode_avif=true の設定と Accept: image/avif を使う
+  --config FILE        使う設定ファイルを明示する (--avif より優先)
   --scenario NAME      シナリオ名 (複数指定可 / all)  default: all
   --concurrency N      同時接続数 (default: 8)
   --duration SEC       計測時間 (default: 15)
@@ -45,6 +46,7 @@ TARGET_URL=""
 UDS_PATH=""
 NO_START=0
 AVIF=0
+CONFIG_ARG=""
 SCENARIOS=()
 CONCURRENCY=8
 DURATION=15
@@ -86,6 +88,10 @@ while [ $# -gt 0 ]; do
 		--avif)
 			AVIF=1
 			shift
+			;;
+		--config)
+			CONFIG_ARG="$2"
+			shift 2
 			;;
 		--scenario | --scenarios)
 			IFS=',' read -r -a _names <<<"$2"
@@ -233,7 +239,10 @@ fi
 perf_info "origin: $ORIGIN_URL (pid $PERF_ORIGIN_PID)"
 
 # --- プロキシ起動 ---------------------------------------------------------
-if [ "$AVIF" -eq 1 ]; then
+if [ -n "$CONFIG_ARG" ]; then
+	CONFIG_SRC="$CONFIG_ARG"
+	[ -f "$CONFIG_SRC" ] || perf_die "設定ファイルが見つかりません: $CONFIG_SRC"
+elif [ "$AVIF" -eq 1 ]; then
 	CONFIG_SRC="$PERF_DIR/config.perf-avif.json"
 else
 	CONFIG_SRC="$PERF_DIR/config.perf.json"
